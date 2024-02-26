@@ -15,11 +15,13 @@ export class PromisedNetSockets {
     private canRead?: boolean | Promise<boolean>;
     private resolveRead: ((value?: any) => void) | undefined;
     private proxy?: ProxyInterface;
+    public localAddress?: string;
 
-    constructor(proxy?: ProxyInterface) {
+    constructor(proxy?: ProxyInterface, localAddress?: string) {
         this.client = undefined;
         this.closed = true;
         this.stream = Buffer.alloc(0);
+        this.localAddress = localAddress;
         if (!proxy?.MTProxy) {
             // we only want to use this when it's not an MTProto proxy.
             if (proxy) {
@@ -121,7 +123,12 @@ export class PromisedNetSockets {
                     this.receive();
                     resolve(this);
                 } else {
-                    this.client.connect(port, ip, () => {
+                    const connectOptions: net.SocketConnectOpts = { port, host: ip };
+                    if (this.localAddress) {
+                        connectOptions.localAddress = this.localAddress;
+                        console.log("Using local address", this.localAddress);
+                    }
+                    this.client.connect(connectOptions, () => {
                         this.receive();
                         resolve(this);
                     });
