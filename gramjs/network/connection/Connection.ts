@@ -73,8 +73,14 @@ class Connection {
         this._obfuscation = undefined; // TcpObfuscated and MTProxy
         this._sendArray = new AsyncQueue();
         this._recvArray = new AsyncQueue();
-        this.socket = new socket(proxy);
         this._testServers = testServers;
+        if (typeof socket === 'function') {
+            // Assuming the constructor can be called with `new`
+            this.socket = new socket(proxy);
+        } else {
+            // Assuming `socket` is already an instance
+            this.socket = socket;
+        }
     }
 
     async _connect() {
